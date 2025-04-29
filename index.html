@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moroccan Salary Calculator</title>
+    <style>
+        /* Style remains the same as previous version */
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 900px; margin: auto; }
+        .container { display: flex; flex-wrap: wrap; gap: 40px; }
+        .form-section, .results-section { flex: 1; min-width: 300px; }
+        form label { display: block; margin-top: 10px; font-weight: bold; }
+        form input[type=number] { width: 95%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;}
+        form button { background-color: #006d77; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-top: 20px;}
+        form button:hover { background-color: #005056; }
+        .results-section h2, .results-section h3 { color: #006d77; border-bottom: 2px solid #e29578; padding-bottom: 5px;}
+        .results-section dl { margin-left: 0; padding-left: 0; }
+        .results-section dt { font-weight: bold; color: #555; width: 270px; float: left; clear: left; padding-right: 10px;}
+        .results-section dd { margin-left: 280px; text-align: right; padding-bottom: 5px; }
+        .total-line dt, .total-line dd { font-weight: bold; color: black; }
+        .subtotal-line dt, .subtotal-line dd { font-weight: bold; color: #333; border-top: 1px solid #eee; padding-top: 5px; }
+        .igr-line dt, .igr-line dd { font-weight: bold; color: #c00; /* Make IGR stand out slightly */ }
+        .net-salary { font-size: 1.4em; font-weight: bold; color: #006d77; text-align: center; margin-top: 20px; padding: 10px; background-color: #eaf4f4; border-radius: 5px;}
+        .error { color: red; font-weight: bold; border: 1px solid red; padding: 10px; margin-bottom: 15px; border-radius: 4px;}
+        .disclaimer { font-size: 0.9em; color: #666; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; }
+        .info-text { font-style: italic; color: #444; font-size: 0.9em; margin-top: 10px; }
+        /* Clearfix for DL */
+        .results-section dl::after { content: ""; display: table; clear: both; }
+    </style>
+</head>
+<body>
+    <h1>Moroccan Salary Calculator</h1>
+    <p>Enter your salary details to calculate your estimated net pay.</p>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <div class="container">
+        <div class="form-section">
+            <!-- Form remains the same as previous version (without CIMR input) -->
+            <form method="post">
+                <h2>Inputs</h2>
+                <label for="hourly_rate">Hourly Rate (MAD):</label>
+                <input type="number" step="any" id="hourly_rate" name="hourly_rate" value="{{ inputs.get('hourly_rate', '') }}" required>
+                <label for="worked_hours">Worked Hours (This Period):</label>
+                <input type="number" step="any" id="worked_hours" name="worked_hours" value="{{ inputs.get('worked_hours', '') }}" required>
+                <label for="function_bonus_base_amount">Function Bonus Base Amount (MAD):</label>
+                <input type="number" step="any" id="function_bonus_base_amount" name="function_bonus_base_amount" value="{{ inputs.get('function_bonus_base_amount', 0) }}">
+                <label for="performance_bonus_amount">Performance Bonus Amount (MAD):</label>
+                <input type="number" step="any" id="performance_bonus_amount" name="performance_bonus_amount" value="{{ inputs.get('performance_bonus_amount', 0) }}">
+                <label for="prime_de_niveau_amount">Prime de Niveau Amount (MAD):</label>
+                <input type="number" step="any" id="prime_de_niveau_amount" name="prime_de_niveau_amount" value="{{ inputs.get('prime_de_niveau_amount', 0) }}">
+                <label for="night_hours_worked">Night Hours Worked:</label>
+                <input type="number" step="any" id="night_hours_worked" name="night_hours_worked" value="{{ inputs.get('night_hours_worked', 0) }}">
+                <label for="night_hour_bonus_rate_percent">Night Hour Bonus Rate (%):</label>
+                <input type="number" step="any" id="night_hour_bonus_rate_percent" name="night_hour_bonus_rate_percent" value="{{ inputs.get('night_hour_bonus_rate_percent', 0) }}">
+                <label for="seniority_rate_percent">Seniority (Ancienneté) Rate (%):</label>
+                <input type="number" step="any" id="seniority_rate_percent" name="seniority_rate_percent" value="{{ inputs.get('seniority_rate_percent', 0) }}">
+                <label for="paid_leave_days">Paid Leave Days (Congé Payé):</label>
+                <input type="number" step="any" id="paid_leave_days" name="paid_leave_days" value="{{ inputs.get('paid_leave_days', 0) }}">
+                <label for="exceptional_leave_days">Exceptional Leave Days (Congé Except.):</label>
+                <input type="number" step="any" id="exceptional_leave_days" name="exceptional_leave_days" value="{{ inputs.get('exceptional_leave_days', 0) }}">
+                <button type="submit">Calculate Salary</button>
+            </form>
+        </div>
+
+        <div class="results-section">
+            {% if results %}
+            <h2>Results</h2>
+
+            <h3>Earnings Breakdown</h3>
+            <dl>
+                {% for name, value in results.earnings.items() %}
+                <dt>{{ name }}:</dt><dd>{{ "%.2f"|format(value) }} MAD</dd>
+                {% endfor %}
+                <hr>
+                <dt class="total-line">Total Gross Salary:</dt><dd class="total-line">{{ "%.2f"|format(results.gross_salary) }} MAD</dd>
+            </dl>
+
+            {# Display Social/Pension Contributions Separately #}
+            <h3>Social & Pension Contributions (Cotisations)</h3>
+            <dl>
+                 {% for name, value in results.social_pension_contributions.items() %}
+                     {% if value != 0 %}
+                         <dt>{{ name }}:</dt><dd>{{ "%.2f"|format(value) }} MAD</dd>
+                     {% endif %}
+                 {% endfor %}
+                 <hr>
+                 {# Display the subtotal for these contributions #}
+                 <dt class="subtotal-line">Total Cotisations:</dt>
+                 <dd class="subtotal-line">{{ "%.2f"|format(results.total_social_pension_contributions) }} MAD</dd>
+            </dl>
+
+            {# Display IGR Separately #}
+            <h3>Income Tax (IGR)</h3>
+            <dl>
+                 {# Hardcode the known label for simplicity and correctness #}
+                 <dt class="igr-line">IGR (Income Tax - calc. 0 dependents):</dt> <!-- Corrected Line -->
+                 <dd class="igr-line">{{ "%.2f"|format(results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']) }} MAD</dd>
+            </dl>
+            {# Display IGR calculation info #}
+            <p class="info-text">
+                (Calculated based on SNI: {{ "%.2f"|format(results.igr_calculation_details['Net Taxable Income (SNI - Monthly)']) }} MAD,
+                after Prof. Expenses Deduction: {{ "%.2f"|format(results.igr_calculation_details['Professional Expenses Deduction (Info)']) }} MAD)
+            </p>
+
+            {# Final Net Salary #}
+            <div class="net-salary">
+                Net Salary to Pay: {{ "%.2f"|format(results.net_salary) }} MAD
+            </div>
+
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This calculation is an estimate based on the provided inputs and standard Moroccan regulations (including common social contribution structures). The IGR (Income Tax) calculation assumes 0 dependents and does not apply family charge deductions; actual tax may be lower for users with dependents. Actual net salary may differ due to specific company policies, variations in complementary insurance schemes, payroll system rounding, specific IGR adjustments, or recent changes in law not yet reflected here. Always refer to your official payslip for definitive figures.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>
