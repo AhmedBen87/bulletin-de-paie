@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i>Mon Profil Utilisateur</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <div class="avatar-circle mb-3">
+                                <span class="initials">{{ current_user.username[0]|upper }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <h5 class="card-title">{{ current_user.username }}</h5>
+                            <p class="card-text">
+                                <i class="fas fa-envelope me-2 text-muted"></i>{{ current_user.email }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-calendar me-2 text-muted"></i>Membre depuis {{ current_user.created_at.strftime('%d/%m/%Y') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-users me-2"></i>Mes Profils</h5>
+                                    <p class="card-text">Gérez vos profils d'employés pour les calculs de paie.</p>
+                                    <a href="{{ url_for('profiles.index') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-right me-1"></i> Accéder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-history me-2"></i>Historique</h5>
+                                    <p class="card-text">Consultez l'historique de vos calculs de paie.</p>
+                                    <a href="{{ url_for('history.index') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-right me-1"></i> Accéder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-calculator me-2"></i>Nouveau Calcul</h5>
+                                    <p class="card-text">Effectuez un nouveau calcul de paie.</p>
+                                    <a href="{{ url_for('calculator.index') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-right me-1"></i> Accéder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-user-plus me-2"></i>Nouveau Profil</h5>
+                                    <p class="card-text">Créez un nouveau profil d'employé.</p>
+                                    <a href="{{ url_for('profiles.new') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-right me-1"></i> Accéder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #6c757d;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .initials {
+        font-size: 50px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %} 

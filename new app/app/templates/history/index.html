@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique des Calculs{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-history me-2"></i>Historique des Calculs</h2>
+        
+        <div>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter me-1"></i>
+                    {% if selected_profile %}Profil: {{ selected_profile.name }}{% else %}Tous les profils{% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li>
+                        <a class="dropdown-item{% if not selected_profile %} active{% endif %}" href="{{ url_for('history.index') }}">
+                            <i class="fas fa-users me-1"></i> Tous les profils
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    {% for profile in profiles %}
+                    <li>
+                        <a class="dropdown-item{% if selected_profile and selected_profile.id == profile.id %} active{% endif %}" 
+                           href="{{ url_for('history.profile', profile_id=profile.id) }}">
+                            <i class="fas fa-user me-1"></i> {{ profile.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    {% if calculations %}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Profil</th>
+                            <th class="text-center">Heures travaillées</th>
+                            <th class="text-end">Brut</th>
+                            <th class="text-end">Net</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for calculation in calculations %}
+                        {% set inputs = calculation.input_data|fromjson %}
+                        <tr>
+                            <td>{{ calculation.calculation_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('profiles.view', profile_id=calculation.profile.id) }}" class="text-decoration-none">
+                                    {{ calculation.profile.name }}
+                                </a>
+                            </td>
+                            <td class="text-center">{{ inputs.worked_hours|round(2) }} h</td>
+                            <td class="text-end">{{ calculation.gross_salary|round(2) }} DH</td>
+                            <td class="text-end fw-bold">{{ calculation.net_salary|round(2) }} DH</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('history.view', calculation_id=calculation.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('calculator.export_pdf', calculation_id=calculation.id) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ calculation.id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal{{ calculation.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Confirmer la suppression</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Êtes-vous sûr de vouloir supprimer ce calcul du {{ calculation.calculation_date.strftime('%d/%m/%Y') }} ?</p>
+                                                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Cette action est irréversible.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <form action="{{ url_for('history.delete', calculation_id=calculation.id) }}" method="post">
+                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="fas fa-info-circle fa-3x mb-3"></i>
+        <h4>Aucun calcul trouvé</h4>
+        <p class="mb-4">
+            {% if selected_profile %}
+            Vous n'avez pas encore effectué de calcul pour le profil {{ selected_profile.name }}.
+            {% else %}
+            Vous n'avez pas encore effectué de calcul.
+            {% endif %}
+        </p>
+        {% if selected_profile %}
+        <a href="{{ url_for('calculator.calculate', profile_id=selected_profile.id) }}" class="btn btn-primary">
+            <i class="fas fa-calculator me-1"></i> Calculer un bulletin de paie
+        </a>
+        {% else %}
+        <a href="{{ url_for('calculator.index') }}" class="btn btn-primary">
+            <i class="fas fa-calculator me-1"></i> Calculer un bulletin de paie
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

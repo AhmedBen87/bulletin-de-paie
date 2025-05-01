@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails du Calcul - {{ profile.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-file-invoice-dollar me-2"></i>Détails du Bulletin</h2>
+        
+        <div>
+            <a href="{{ url_for('history.profile', profile_id=profile.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-history me-1"></i> Retour à l'historique
+            </a>
+            <div class="btn-group ms-2">
+                <a href="{{ url_for('calculator.print', calculation_id=calculation.id) }}" class="btn btn-outline-primary" target="_blank">
+                    <i class="fas fa-print me-1"></i> Imprimer
+                </a>
+                <a href="{{ url_for('calculator.export_pdf', calculation_id=calculation.id) }}" class="btn btn-primary">
+                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Meta Information Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">Informations du calcul</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th style="width: 40%">Date de calcul:</th>
+                            <td>{{ calculation.calculation_date.strftime('%d/%m/%Y à %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Profil:</th>
+                            <td>{{ profile.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Référence:</th>
+                            <td>BP{{ calculation.id }}-{{ calculation.calculation_date.strftime('%Y%m%d') }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="card-title">Paramètres appliqués</h5>
+                    <table class="table table-sm">
+                        <tr>
+                            <th style="width: 40%">Taux horaire:</th>
+                            <td>{{ profile.hourly_rate|round(2) }} DH/h</td>
+                        </tr>
+                        <tr>
+                            <th>Heures travaillées:</th>
+                            <td>{{ inputs.worked_hours|round(2) }} h</td>
+                        </tr>
+                        <tr>
+                            <th>Taux d'ancienneté:</th>
+                            <td>{{ inputs.seniority_rate_percent|round(1) }}%</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Brut</h6>
+                    <div class="display-6">{{ results.gross_salary|round(2) }} DH</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Cotisations</h6>
+                    <div class="display-6 text-danger">
+                        {{ (results.total_social_pension_contributions + results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)'])|round(2) }} DH
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Net</h6>
+                    <div class="display-6">{{ results.net_salary|round(2) }} DH</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detailed Tabs -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                        <i class="fas fa-list-ul me-1"></i> Détails
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="earnings-tab" data-bs-toggle="tab" data-bs-target="#earnings" type="button" role="tab">
+                        <i class="fas fa-plus-circle me-1"></i> Revenus
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="deductions-tab" data-bs-toggle="tab" data-bs-target="#deductions" type="button" role="tab">
+                        <i class="fas fa-minus-circle me-1"></i> Cotisations
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="parameters-tab" data-bs-toggle="tab" data-bs-target="#parameters" type="button" role="tab">
+                        <i class="fas fa-sliders-h me-1"></i> Paramètres
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <!-- Details Tab -->
+                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Calcul du Net</h5>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Salaire Brut</td>
+                                        <td class="text-end">{{ results.gross_salary|round(2) }} DH</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total des Cotisations Sociales</td>
+                                        <td class="text-end text-danger">- {{ results.total_social_pension_contributions|round(2) }} DH</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Impôt sur le Revenu (IR)</td>
+                                        <td class="text-end text-danger">- {{ results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']|round(2) }} DH</td>
+                                    </tr>
+                                    <tr class="table-success">
+                                        <th>Salaire Net</th>
+                                        <th class="text-end">{{ results.net_salary|round(2) }} DH</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Résumé des heures</h5>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Heures normales</td>
+                                        <td class="text-end">{{ inputs.worked_hours|round(2) }} h</td>
+                                    </tr>
+                                    {% if inputs.night_hours_worked and inputs.night_hours_worked > 0 %}
+                                    <tr>
+                                        <td>Heures de nuit</td>
+                                        <td class="text-end">{{ inputs.night_hours_worked|round(2) }} h</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if inputs.extra_hours_125 and inputs.extra_hours_125 > 0 %}
+                                    <tr>
+                                        <td>Heures sup. (125%)</td>
+                                        <td class="text-end">{{ inputs.extra_hours_125|round(2) }} h</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if inputs.extra_hours_150 and inputs.extra_hours_150 > 0 %}
+                                    <tr>
+                                        <td>Heures sup. (150%)</td>
+                                        <td class="text-end">{{ inputs.extra_hours_150|round(2) }} h</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if inputs.extra_hours_200 and inputs.extra_hours_200 > 0 %}
+                                    <tr>
+                                        <td>Heures sup. (200%)</td>
+                                        <td class="text-end">{{ inputs.extra_hours_200|round(2) }} h</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if inputs.paid_leave_days and inputs.paid_leave_days > 0 %}
+                                    <tr>
+                                        <td>Jours de congés payés</td>
+                                        <td class="text-end">{{ inputs.paid_leave_days|round(1) }} j</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if inputs.exceptional_leave_days and inputs.exceptional_leave_days > 0 %}
+                                    <tr>
+                                        <td>Jours de congés exceptionnels</td>
+                                        <td class="text-end">{{ inputs.exceptional_leave_days|round(1) }} j</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Earnings Tab -->
+                <div class="tab-pane fade" id="earnings" role="tabpanel">
+                    <h5>Détail des revenus</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60%">Composante</th>
+                                    <th class="text-end">Montant (DH)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, value in results.earnings.items() %}
+                                    {% if value > 0 %}
+                                    <tr>
+                                        <td>{{ key }}</td>
+                                        <td class="text-end">{{ value|round(2) }}</td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                <tr class="table-light">
+                                    <th>Salaire Brut</th>
+                                    <th class="text-end">{{ results.gross_salary|round(2) }}</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Deductions Tab -->
+                <div class="tab-pane fade" id="deductions" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Cotisations sociales</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 60%">Cotisation</th>
+                                            <th class="text-end">Montant (DH)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key, value in results.social_pension_contributions.items() %}
+                                        <tr>
+                                            <td>{{ key }}</td>
+                                            <td class="text-end">{{ value|round(2) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="table-light">
+                                            <th>Total des Cotisations Sociales</th>
+                                            <th class="text-end">{{ results.total_social_pension_contributions|round(2) }}</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Impôt sur le Revenu (IR)</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        {% for key, value in results.igr_calculation_details.items() %}
+                                        <tr>
+                                            <td>{{ key }}</td>
+                                            <td class="text-end">{{ value|round(2) }} DH</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Parameters Tab -->
+                <div class="tab-pane fade" id="parameters" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Paramètres du profil</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td>Taux horaire</td>
+                                            <td class="text-end">{{ profile.hourly_rate|round(2) }} DH/h</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prime de fonction</td>
+                                            <td class="text-end">{{ profile.function_bonus_base_amount|round(2) }} DH</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prime de performance</td>
+                                            <td class="text-end">{{ profile.performance_bonus_amount|round(2) }} DH</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prime de niveau</td>
+                                            <td class="text-end">{{ profile.prime_de_niveau_amount|round(2) }} DH</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Taux d'ancienneté</td>
+                                            <td class="text-end">{{ profile.seniority_rate_percent|round(1) }}%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Paramètres du calcul</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <td>Taux CNSS</td>
+                                            <td class="text-end">4.48%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Plafond CNSS mensuel</td>
+                                            <td class="text-end">6000.00 DH</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Taux CIMR</td>
+                                            <td class="text-end">4.50%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Taux des frais professionnels</td>
+                                            <td class="text-end">20.00%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Plafond des frais professionnels</td>
+                                            <td class="text-end">2500.00 DH/mois</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between mb-5">
+        <div>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="fas fa-trash-alt me-1"></i> Supprimer ce calcul
+            </button>
+        </div>
+        
+        <div>
+            <a href="{{ url_for('history.profile', profile_id=profile.id) }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-history me-1"></i> Retour à l'historique
+            </a>
+            <a href="{{ url_for('calculator.calculate', profile_id=profile.id) }}" class="btn btn-primary">
+                <i class="fas fa-calculator me-1"></i> Nouveau calcul
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce calcul du {{ calculation.calculation_date.strftime('%d/%m/%Y') }} ?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form action="{{ url_for('history.delete', calculation_id=calculation.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

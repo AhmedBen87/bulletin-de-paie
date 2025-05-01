@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Profils{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users me-2"></i>Mes Profils</h2>
+        
+        <div>
+            <a href="{{ url_for('profiles.new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Nouveau profil
+            </a>
+        </div>
+    </div>
+    
+    {% if profiles %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for profile in profiles %}
+        <div class="col">
+            <div class="card h-100 profile-card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">{{ profile.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Taux horaire:</span>
+                        <span class="fw-bold">{{ profile.hourly_rate|round(2) }} DH/h</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Prime fonction:</span>
+                        <span>{{ profile.function_bonus_base_amount|round(2) }} DH</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Prime performance:</span>
+                        <span>{{ profile.performance_bonus_amount|round(2) }} DH</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Prime niveau:</span>
+                        <span>{{ profile.prime_de_niveau_amount|round(2) }} DH</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Ancienneté:</span>
+                        <span>{{ profile.seniority_rate_percent|round(1) }}%</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between">
+                        <div class="btn-group">
+                            <a href="{{ url_for('profiles.view', profile_id=profile.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-eye me-1"></i> Voir
+                            </a>
+                            <a href="{{ url_for('profiles.edit', profile_id=profile.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i> Modifier
+                            </a>
+                        </div>
+                        <a href="{{ url_for('calculator.calculate', profile_id=profile.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-calculator me-1"></i> Calculer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- New Profile Card -->
+        <div class="col">
+            <div class="card h-100 profile-card border-dashed text-center shadow-sm">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i class="fas fa-plus-circle fa-4x text-muted mb-3"></i>
+                    <h5 class="card-title">Nouveau profil</h5>
+                    <p class="text-muted">Créer un nouveau profil pour calculer un salaire</p>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('profiles.new') }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-plus me-1"></i> Créer un profil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center p-5">
+        <i class="fas fa-info-circle fa-3x mb-3"></i>
+        <h4>Aucun profil trouvé</h4>
+        <p class="mb-4">Vous n'avez pas encore créé de profil. Créez votre premier profil pour commencer à calculer vos bulletins de paie.</p>
+        <a href="{{ url_for('profiles.new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Créer mon premier profil
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .border-dashed {
+        border-style: dashed;
+        border-width: 2px;
+        border-color: #dee2e6;
+    }
+    
+    .profile-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Bulletin de Paie{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12 text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary">
+                <i class="fas fa-file-invoice-dollar me-3"></i>Bulletin de Paie
+            </h1>
+            <p class="lead">Calculateur de salaire simple et fiable pour vos bulletins de paie</p>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+        <!-- User is logged in - Show profile cards -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="h3 mb-4">
+                    <i class="fas fa-user me-2"></i>Vos profils
+                </h2>
+                
+                {% if profiles %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for profile in profiles %}
+                            <div class="col">
+                                <div class="card h-100 profile-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ profile.name }}</h5>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Taux horaire:</span>
+                                            <span class="fw-bold">{{ profile.hourly_rate|round(2) }} DH</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Prime fonction:</span>
+                                            <span>{{ profile.function_bonus_base_amount|round(2) }} DH</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{{ url_for('profiles.view', profile_id=profile.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye me-1"></i> Voir
+                                            </a>
+                                            <a href="{{ url_for('calculator.calculate', profile_id=profile.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-calculator me-1"></i> Calculer
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- New Profile Card -->
+                        <div class="col">
+                            <div class="card h-100 profile-card border-dashed">
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center text-center">
+                                    <i class="fas fa-plus-circle fa-4x text-muted mb-3"></i>
+                                    <h5 class="card-title">Nouveau profil</h5>
+                                    <p class="text-muted">Créer un nouveau profil pour calculer un salaire</p>
+                                </div>
+                                <div class="card-footer bg-white text-center">
+                                    <a href="{{ url_for('profiles.new') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-plus me-1"></i> Créer un profil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-user-plus fa-4x text-muted mb-3"></i>
+                            <h3 class="card-title">Aucun profil trouvé</h3>
+                            <p class="card-text">Vous n'avez pas encore créé de profil. Créez votre premier profil pour commencer à calculer vos bulletins de paie.</p>
+                            <a href="{{ url_for('profiles.new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Créer mon premier profil
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <!-- User is not logged in - Show welcome screen -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-body p-5">
+                        <h2 class="card-title mb-4">Simplifiez vos calculs de paie</h2>
+                        <p class="card-text">Notre application vous permet de calculer facilement et précisément les bulletins de paie pour vos employés ou pour vous-même.</p>
+                        <p class="card-text">Créez des profils, calculez les salaires en prenant en compte les primes, les heures supplémentaires et suivez l'historique de vos calculs.</p>
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>S'inscrire gratuitement
+                            </a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card bg-light">
+                    <div class="card-body p-4">
+                        <h3 class="card-title mb-3">Fonctionnalités principales</h3>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Gestion des profils avec taux horaire et primes
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Calcul des heures supplémentaires et de nuit
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Prise en compte des congés payés et exceptionnels
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Calcul automatique des cotisations sociales
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Historique de tous vos calculs
+                            </li>
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Export au format PDF de vos bulletins
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

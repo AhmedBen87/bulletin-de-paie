@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Sélectionner un Profil - Calculateur{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3"><i class="fas fa-calculator me-2"></i>Calculateur de Bulletin de Paie</h2>
+            <p class="lead">Sélectionnez un profil pour effectuer un calcul de salaire</p>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for profile in profiles %}
+            <div class="col">
+                <div class="card h-100 profile-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ profile.name }}</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Taux horaire:</span>
+                            <span class="fw-bold">{{ profile.hourly_rate|round(2) }} DH/h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Prime fonction:</span>
+                            <span>{{ profile.function_bonus_base_amount|round(2) }} DH</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Ancienneté:</span>
+                            <span>{{ profile.seniority_rate_percent|round(1) }}%</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('calculator.calculate', profile_id=profile.id) }}" class="btn btn-primary">
+                                <i class="fas fa-calculator me-1"></i> Calculer avec ce profil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Vous n'avez pas trouvé le profil que vous cherchez?
+                <a href="{{ url_for('profiles.new') }}" class="alert-link">Créez un nouveau profil</a>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

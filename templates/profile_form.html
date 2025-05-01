@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if profile else 'Create' }} Profile - Moroccan Salary Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #34495e;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #f5f7fa;
+            --danger-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --border-radius: 6px;
+            --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: #f5f7fa;
+            padding: 0;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-header-icon {
+            margin-right: 1rem;
+            font-size: 1.8rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.25);
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group-append {
+            margin-left: -1px;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #e9ecef;
+            border: 1px solid #ddd;
+            border-left: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        .input-group .form-control {
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-right: 0;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            min-width: 120px;
+        }
+        
+        .btn:last-child {
+            margin-right: 0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0b7dda;
+            box-shadow: 0 4px 8px rgba(30, 144, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        
+        .form-actions-left, .form-actions-right {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+        
+        .flash {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid var(--danger-color);
+        }
+        
+        .help-text {
+            display: block;
+            margin-top: 0.25rem;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.3s;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--danger-color);
+            margin: 0;
+        }
+        
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #aaa;
+        }
+        
+        .modal-close:hover {
+            color: #555;
+        }
+        
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .btn {
+                min-width: 120px;
+                width: auto;
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-actions-left, .form-actions-right {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        .required-field::after {
+            content: '*';
+            color: var(--danger-color);
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Moroccan Salary Calculator</h1>
+        <p class="subtitle">{{ 'Edit' if profile else 'Create' }} Profile</p>
+    </header>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% if get_flashed_messages() %}
+        <div class="flash-messages">
+            {% for message in get_flashed_messages() %}
+                <div class="flash flash-success">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-{{ 'edit' if profile else 'plus' }} card-header-icon"></i>
+                {{ 'Edit' if profile else 'Create' }} Profile
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('edit_profile', profile_id=profile.id) if profile else url_for('new_profile') }}">
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-user-circle"></i> Basic Information
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="name" class="form-label required-field">Profile Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ profile.name if profile else '' }}" required placeholder="Enter profile name (e.g. My Company Job)">
+                            <small class="help-text">A name to identify this profile (e.g. your job title or company name)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-money-bill-wave"></i> Salary Information
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="hourly_rate" class="form-label required-field">Hourly Rate (MAD):</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="hourly_rate" name="hourly_rate" value="{{ profile.hourly_rate if profile else '' }}" required placeholder="0.00">
+                                <div class="input-group-append">MAD</div>
+                            </div>
+                            <small class="help-text">Your base hourly rate</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="function_bonus_base_amount" class="form-label">Function Bonus Base Amount (MAD):</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="function_bonus_base_amount" name="function_bonus_base_amount" value="{{ profile.function_bonus_base_amount if profile else '0' }}" placeholder="0.00">
+                                <div class="input-group-append">MAD</div>
+                            </div>
+                            <small class="help-text">The base amount for your function bonus (if applicable)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="performance_bonus_amount" class="form-label">Performance Bonus Amount (MAD):</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="performance_bonus_amount" name="performance_bonus_amount" value="{{ profile.performance_bonus_amount if profile else '0' }}" placeholder="0.00">
+                                <div class="input-group-append">MAD</div>
+                            </div>
+                            <small class="help-text">Your standard performance bonus amount (if applicable)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="prime_de_niveau_amount" class="form-label">Prime de Niveau Amount (MAD):</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="prime_de_niveau_amount" name="prime_de_niveau_amount" value="{{ profile.prime_de_niveau_amount if profile else '0' }}" placeholder="0.00">
+                                <div class="input-group-append">MAD</div>
+                            </div>
+                            <small class="help-text">Your level bonus amount (if applicable)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="seniority_rate_percent" class="form-label">Seniority (Ancienneté) Rate (%):</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" class="form-control" id="seniority_rate_percent" name="seniority_rate_percent" value="{{ profile.seniority_rate_percent if profile else '0' }}" placeholder="0.00">
+                                <div class="input-group-append">%</div>
+                            </div>
+                            <small class="help-text">Your seniority bonus rate (if applicable)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <div class="form-actions-left">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left btn-icon"></i> Back to Profiles
+                            </a>
+                        </div>
+                        <div class="form-actions-right">
+                            {% if profile %}
+                                <button type="button" class="btn btn-danger" onclick="showDeleteModal()">
+                                    <i class="fas fa-trash-alt btn-icon"></i> Delete Profile
+                                </button>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save btn-icon"></i> {{ 'Save Changes' if profile else 'Create Profile' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if profile %}
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Delete Profile</h2>
+                <span class="modal-close" onclick="hideDeleteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the profile <strong>{{ profile.name }}</strong>?</p>
+                <p>This action cannot be undone and all calculation history for this profile will be lost.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideDeleteModal()">
+                    <i class="fas fa-times btn-icon"></i> Cancel
+                </button>
+                <form method="post" action="{{ url_for('delete_profile', profile_id=profile.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt btn-icon"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDeleteModal() {
+            document.getElementById("deleteModal").style.display = "block";
+        }
+        
+        function hideDeleteModal() {
+            document.getElementById("deleteModal").style.display = "none";
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById("deleteModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+    {% endif %}
+</body>
+</html> 

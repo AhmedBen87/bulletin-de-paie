@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moroccan Salary Calculator - Profiles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #34495e;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #f5f7fa;
+            --danger-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --border-radius: 6px;
+            --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: #f5f7fa;
+            padding: 0;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .profile-card, .new-profile-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 350px;
+        }
+        
+        .profile-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .profile-name {
+            font-size: 1.8rem;
+            margin: 0;
+            word-break: break-word;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--light-bg);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+        
+        .profile-details {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .profile-detail {
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .profile-detail-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .profile-detail-value {
+            font-weight: 500;
+        }
+        
+        .profile-actions {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #eee;
+            background-color: #f8f9fa;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-right: 0;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #219955;
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+            box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .new-profile-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            border: 2px dashed #bdc3c7;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .new-profile-card:hover {
+            border-color: var(--secondary-color);
+            background-color: #edf2f7;
+        }
+        
+        .new-profile-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+        
+        .flash {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 5px solid var(--success-color);
+        }
+        
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid var(--danger-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(30, 144, 255, 0.25);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #aaa;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-message {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-card, .new-profile-card {
+                min-height: auto;
+            }
+            
+            .profile-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                flex: 1 1 auto;
+                min-width: 100px;
+                font-size: 0.9rem;
+                padding: 0.6rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Moroccan Salary Calculator</h1>
+        <p class="subtitle">Manage your salary profiles for easier calculations</p>
+    </header>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% if get_flashed_messages() %}
+        <div class="flash-messages">
+            {% for message in get_flashed_messages() %}
+                <div class="flash flash-success">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users"></i> Your Salary Profiles
+            </div>
+            <div class="card-body">
+                <p>Select an existing profile or create a new one to calculate your salary.</p>
+                
+                <div class="profile-grid">
+                    <!-- Create New Profile Card -->
+                    <a href="{{ url_for('new_profile') }}" style="text-decoration: none;">
+                        <div class="new-profile-card">
+                            <div class="new-profile-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <h3>Create New Profile</h3>
+                            <p>Set up a new profile with your fixed salary information</p>
+                        </div>
+                    </a>
+                    
+                    {% if profiles %}
+                        {% for profile in profiles %}
+                        <div class="profile-card">
+                            <div class="profile-header">
+                                <div class="profile-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h3 class="profile-name">{{ profile.name }}</h3>
+                            </div>
+                            <div class="profile-details">
+                                <div class="profile-detail">
+                                    <span class="profile-detail-label">Hourly Rate:</span>
+                                    <span class="profile-detail-value">{{ "%.2f"|format(profile.hourly_rate) }} MAD</span>
+                                </div>
+                                <div class="profile-detail">
+                                    <span class="profile-detail-label">Function Bonus:</span>
+                                    <span class="profile-detail-value">{{ "%.2f"|format(profile.function_bonus_base_amount) }} MAD</span>
+                                </div>
+                                <div class="profile-detail">
+                                    <span class="profile-detail-label">Performance Bonus:</span>
+                                    <span class="profile-detail-value">{{ "%.2f"|format(profile.performance_bonus_amount) }} MAD</span>
+                                </div>
+                                <div class="profile-detail">
+                                    <span class="profile-detail-label">Prime de Niveau:</span>
+                                    <span class="profile-detail-value">{{ "%.2f"|format(profile.prime_de_niveau_amount) }} MAD</span>
+                                </div>
+                                <div class="profile-detail">
+                                    <span class="profile-detail-label">Created:</span>
+                                    <span class="profile-detail-value">{{ profile.created_at.strftime('%d/%m/%Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="profile-actions">
+                                <a href="{{ url_for('calculator', profile_id=profile.id) }}" class="btn btn-success">
+                                    <i class="fas fa-calculator btn-icon"></i> Calculate
+                                </a>
+                                <a href="{{ url_for('edit_profile', profile_id=profile.id) }}" class="btn btn-warning">
+                                    <i class="fas fa-edit btn-icon"></i> Edit
+                                </a>
+                                <a href="{{ url_for('history', profile_id=profile.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-history btn-icon"></i> History
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state" style="grid-column: span 3;">
+                            <div class="empty-icon">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <p class="empty-message">You don't have any profiles yet. Create your first profile to get started!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2023 Moroccan Salary Calculator - All rights reserved</p>
+        </footer>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculation Detail - {{ calculation.calculation_date.strftime('%d/%m/%Y') }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #34495e;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #f5f7fa;
+            --danger-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --border-radius: 6px;
+            --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: #f5f7fa;
+            padding: 0;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-header-icon {
+            margin-right: 0.75rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-right: 0;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 140px;
+            max-width: 200px;
+        }
+        
+        .btn:last-child {
+            margin-right: 0;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0b7dda;
+            box-shadow: 0 4px 8px rgba(30, 144, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #4cae4c;
+            box-shadow: 0 4px 8px rgba(92, 184, 92, 0.3);
+        }
+        
+        .btn-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .nav-actions {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        
+        .calc-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .calc-detail {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--light-bg);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            min-width: 120px;
+        }
+        
+        .calc-detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .calc-detail-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        /* Results styles */
+        .results-section h2, .results-section h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #e29578;
+            padding-bottom: 5px;
+        }
+        
+        .results-section dl {
+            margin-left: 0;
+            padding-left: 0;
+        }
+        
+        .results-section dt {
+            font-weight: bold;
+            color: #555;
+            width: 270px;
+            float: left;
+            clear: left;
+            padding-right: 10px;
+        }
+        
+        .results-section dd {
+            margin-left: 280px;
+            text-align: right;
+            padding-bottom: 5px;
+        }
+        
+        .results-section dl::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        .total-line dt, .total-line dd {
+            font-weight: bold;
+            color: black;
+        }
+        
+        .subtotal-line dt, .subtotal-line dd {
+            font-weight: bold;
+            color: #333;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
+        
+        .igr-line dt, .igr-line dd {
+            font-weight: bold;
+            color: #c00;
+        }
+        
+        .net-salary {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eaf4f4;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .info-text {
+            font-style: italic;
+            color: #444;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .calculation-info {
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .calculation-info h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .inputs-section, .calculation-details {
+            margin-bottom: 2rem;
+        }
+        
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .input-item {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .input-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .input-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .disclaimer {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .results-section dt {
+                width: 100%;
+                float: none;
+                margin-bottom: 0.25rem;
+            }
+            
+            .results-section dd {
+                margin-left: 0;
+                padding-left: 1rem;
+                border-left: 3px solid #eee;
+                margin-bottom: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .btn {
+                min-width: 120px;
+                max-width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Moroccan Salary Calculator</h1>
+        <p class="subtitle">Calculation Details for {{ profile.name }} - {{ calculation.calculation_date.strftime('%d/%m/%Y') }}</p>
+    </header>
+
+    <div class="container">
+        <!-- Navigation Actions -->
+        <div class="nav-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-home btn-icon"></i> Home
+            </a>
+            <a href="{{ url_for('history', profile_id=profile.id) }}" class="btn btn-primary">
+                <i class="fas fa-history btn-icon"></i> Back to History
+            </a>
+            <a href="{{ url_for('calculator', profile_id=profile.id) }}" class="btn btn-primary">
+                <i class="fas fa-calculator btn-icon"></i> New Calculation
+            </a>
+        </div>
+
+        <!-- Calculation Summary -->
+        <div class="calculation-info">
+            <h3><i class="fas fa-info-circle"></i> Calculation Summary</h3>
+            <div class="calc-details">
+                <div class="calc-detail">
+                    <span class="calc-detail-label">Date</span>
+                    <span class="calc-detail-value">{{ calculation.calculation_date.strftime('%d/%m/%Y') }}</span>
+                </div>
+                <div class="calc-detail">
+                    <span class="calc-detail-label">Time</span>
+                    <span class="calc-detail-value">{{ calculation.calculation_date.strftime('%H:%M') }}</span>
+                </div>
+                <div class="calc-detail">
+                    <span class="calc-detail-label">Worked Hours</span>
+                    <span class="calc-detail-value">{{ inputs.worked_hours }} hours</span>
+                </div>
+                <div class="calc-detail">
+                    <span class="calc-detail-label">Gross Salary</span>
+                    <span class="calc-detail-value">{{ "%.2f"|format(calculation.gross_salary) }} MAD</span>
+                </div>
+                <div class="calc-detail">
+                    <span class="calc-detail-label">Net Salary</span>
+                    <span class="calc-detail-value">{{ "%.2f"|format(calculation.net_salary) }} MAD</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <!-- Inputs Section -->
+            <div class="inputs-section">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-sliders-h card-header-icon"></i> Calculation Inputs
+                    </div>
+                    <div class="card-body">
+                        <div class="inputs-grid">
+                            <div class="input-item">
+                                <div class="input-label">Hourly Rate</div>
+                                <div class="input-value">{{ "%.2f"|format(inputs.hourly_rate) }} MAD</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Worked Hours</div>
+                                <div class="input-value">{{ inputs.worked_hours }} hours</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Function Bonus Base</div>
+                                <div class="input-value">{{ "%.2f"|format(inputs.function_bonus_base_amount) }} MAD</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Performance Bonus</div>
+                                <div class="input-value">{{ "%.2f"|format(inputs.performance_bonus_amount) }} MAD</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Prime de Niveau</div>
+                                <div class="input-value">{{ "%.2f"|format(inputs.prime_de_niveau_amount) }} MAD</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Night Hours</div>
+                                <div class="input-value">{{ inputs.night_hours_worked }} hours</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Night Bonus Rate</div>
+                                <div class="input-value">20% (fixed)</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Extra Hours (125%)</div>
+                                <div class="input-value">{{ inputs.extra_hours_125 }} hours</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Extra Hours (150%)</div>
+                                <div class="input-value">{{ inputs.extra_hours_150 }} hours</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Extra Hours (200%)</div>
+                                <div class="input-value">{{ inputs.extra_hours_200 }} hours</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Seniority Rate</div>
+                                <div class="input-value">{{ inputs.seniority_rate_percent }}%</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Paid Leave Days</div>
+                                <div class="input-value">{{ inputs.paid_leave_days }} days</div>
+                            </div>
+                            <div class="input-item">
+                                <div class="input-label">Exceptional Leave Days</div>
+                                <div class="input-value">{{ inputs.exceptional_leave_days }} days</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar card-header-icon"></i> Calculation Results
+                    </div>
+                    <div class="card-body">
+                        <h3>Earnings Breakdown</h3>
+                        <dl>
+                            {% for name, value in results.earnings.items() %}
+                            <dt>{{ name }}:</dt><dd>{{ "%.2f"|format(value) }} MAD</dd>
+                            {% endfor %}
+                            <hr>
+                            <dt class="total-line">Total Gross Salary:</dt><dd class="total-line">{{ "%.2f"|format(results.gross_salary) }} MAD</dd>
+                        </dl>
+
+                        <h3>Social & Pension Contributions</h3>
+                        <dl>
+                            {% for name, value in results.social_pension_contributions.items() %}
+                                {% if value != 0 %}
+                                    <dt>{{ name }}:</dt><dd>{{ "%.2f"|format(value) }} MAD</dd>
+                                {% endif %}
+                            {% endfor %}
+                            <hr>
+                            <dt class="subtotal-line">Total Cotisations:</dt>
+                            <dd class="subtotal-line">{{ "%.2f"|format(results.total_social_pension_contributions) }} MAD</dd>
+                        </dl>
+
+                        <h3>Income Tax (IGR)</h3>
+                        <dl>
+                            <dt class="igr-line">IGR (Income Tax - calc. 0 dependents):</dt>
+                            <dd class="igr-line">{{ "%.2f"|format(results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']) }} MAD</dd>
+                        </dl>
+                        
+                        <p class="info-text">
+                            (Calculated based on SNI: {{ "%.2f"|format(results.igr_calculation_details['Net Taxable Income (SNI - Monthly)']) }} MAD,
+                            after Prof. Expenses Deduction: {{ "%.2f"|format(results.igr_calculation_details['Professional Expenses Deduction (Info)']) }} MAD)
+                        </p>
+
+                        <div class="net-salary">
+                            Net Salary to Pay: {{ "%.2f"|format(results.net_salary) }} MAD
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This calculation is an estimate based on the provided inputs and standard Moroccan regulations (including common social contribution structures). The IGR (Income Tax) calculation assumes 0 dependents and does not apply family charge deductions; actual tax may be lower for users with dependents. Actual net salary may differ due to specific company policies, variations in complementary insurance schemes, payroll system rounding, specific IGR adjustments, or recent changes in law not yet reflected here. Always refer to your official payslip for definitive figures.
+        </div>
+    </div>
+</body>
+</html> 

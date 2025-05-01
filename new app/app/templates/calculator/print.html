@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulletin de Paie - {{ profile.name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    @media print {
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+        
+        body {
+            font-size: 10pt;
+            line-height: 1.3;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+        }
+        
+        .card {
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .table {
+            font-size: 10pt;
+        }
+        
+        .no-print {
+            display: none !important;
+        }
+        
+        footer, nav, .nav {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-file-invoice me-2"></i>Bulletin de Paie</h2>
+        
+        <div class="no-print">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print me-1"></i> Imprimer
+            </button>
+            <a href="{{ url_for('calculator.export_pdf', calculation_id=calculation.id) }}" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+            </a>
+        </div>
+    </div>
+    
+    <!-- Header Information -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h5>Informations Employé</h5>
+                    <table class="table table-borderless table-sm">
+                        <tr>
+                            <th>Nom:</th>
+                            <td>{{ profile.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Taux horaire:</th>
+                            <td>{{ profile.hourly_rate|round(2) }} DH/h</td>
+                        </tr>
+                        <tr>
+                            <th>Ancienneté:</th>
+                            <td>{{ profile.seniority_rate_percent|round(1) }}%</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-sm-6">
+                    <h5>Informations Bulletin</h5>
+                    <table class="table table-borderless table-sm">
+                        <tr>
+                            <th>Date de calcul:</th>
+                            <td>{{ calculation.calculation_date.strftime('%d/%m/%Y') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Heures travaillées:</th>
+                            <td>{{ inputs.worked_hours|round(2) }} h</td>
+                        </tr>
+                        <tr>
+                            <th>Référence:</th>
+                            <td>BP{{ calculation.id }}-{{ calculation.calculation_date.strftime('%Y%m%d') }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary -->
+    <div class="row mb-4">
+        <div class="col-sm-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Salaire Brut</h6>
+                    <div class="display-6">{{ results.gross_salary|round(2) }} DH</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Total Cotisations</h6>
+                    <div class="display-6">{{ results.total_social_pension_contributions|round(2) }} DH</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Salaire Net</h6>
+                    <div class="display-6 text-success">{{ results.net_salary|round(2) }} DH</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detailed Tables -->
+    <div class="row">
+        <!-- Revenus -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Revenus</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            {% for key, value in results.earnings.items() %}
+                                {% if value > 0 %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td class="text-end">{{ value|round(2) }} DH</td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th>Total Brut</th>
+                                <th class="text-end">{{ results.gross_salary|round(2) }} DH</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cotisations -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Cotisations & Impôts</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            {% for key, value in results.social_pension_contributions.items() %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td class="text-end">{{ value|round(2) }} DH</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td>Impôt sur le Revenu (IR)</td>
+                                <td class="text-end">{{ results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']|round(2) }} DH</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th>Total des Retenues</th>
+                                <th class="text-end">{{ (results.total_social_pension_contributions + results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)'])|round(2) }} DH</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Net Calculation -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Calcul du Net</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table mb-0">
+                <tbody>
+                    <tr>
+                        <td>Salaire Brut</td>
+                        <td class="text-end">{{ results.gross_salary|round(2) }} DH</td>
+                    </tr>
+                    <tr>
+                        <td>Total des Cotisations Sociales</td>
+                        <td class="text-end text-danger">- {{ results.total_social_pension_contributions|round(2) }} DH</td>
+                    </tr>
+                    <tr>
+                        <td>Impôt sur le Revenu (IR)</td>
+                        <td class="text-end text-danger">- {{ results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']|round(2) }} DH</td>
+                    </tr>
+                </tbody>
+                <tfoot class="table-success">
+                    <tr>
+                        <th>Salaire Net</th>
+                        <th class="text-end">{{ results.net_salary|round(2) }} DH</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-light text-center small">
+                <p>Document généré le {{ calculation.calculation_date.strftime('%d/%m/%Y à %H:%M') }}</p>
+                <p class="mb-0">Ce document est informatif et ne constitue pas un bulletin de paie officiel.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Print Controls -->
+    <div class="row mt-4 no-print">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('calculator.calculate', profile_id=profile.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour au calculateur
+            </a>
+            <button onclick="window.print()" class="btn btn-primary ms-2">
+                <i class="fas fa-print me-1"></i> Imprimer
+            </button>
+            <a href="{{ url_for('calculator.export_pdf', calculation_id=calculation.id) }}" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

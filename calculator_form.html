@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Calculateur de Salaire{% endblock %}
+
+{% block head_extra %}
+<style>
+    .calculation-card {
+        transition: all 0.3s ease;
+    }
+    .calculation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .input-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .tooltip-icon {
+        cursor: help;
+        color: #6c757d;
+    }
+    .tab-pane {
+        padding: 20px 0;
+    }
+    .card-header {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    .result-section {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    .result-section.visible {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h1 class="display-5 fw-bold text-primary">
+            <i class="fas fa-calculator me-2"></i> Calculateur de Salaire
+        </h1>
+        <p class="lead text-muted">Calculez les détails de la paie pour le profil de {{ profile.name }}</p>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Input Form Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <ul class="nav nav-tabs card-header-tabs" id="inputTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard" type="button" role="tab" aria-controls="standard" aria-selected="true">
+                            <i class="fas fa-list me-1"></i> Entrées Standard
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button" role="tab" aria-controls="calendar" aria-selected="false">
+                            <i class="fas fa-calendar-alt me-1"></i> Vue Calendrier
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false">
+                            <i class="fas fa-sliders-h me-1"></i> Options Avancées
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <form method="post" id="calculatorForm">
+                    <input type="hidden" name="tab" id="activeTab" value="standard">
+                    <input type="hidden" name="calendar_data_storage" id="calendarDataStorage" value="{{ inputs.calendar_data_storage|default('{}') }}">
+                    
+                    <div class="tab-content" id="inputTabsContent">
+                        <!-- Standard Inputs Tab -->
+                        <div class="tab-pane fade show active" id="standard" role="tabpanel" aria-labelledby="standard-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-section">
+                                        <h5><i class="fas fa-business-time me-2"></i>Heures Travaillées</h5>
+                                        <div class="mb-3">
+                                            <label for="worked_hours" class="form-label">Heures travaillées <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Heures régulières travaillées dans le mois"></i></label>
+                                            <input type="number" class="form-control" id="worked_hours" name="worked_hours" step="0.5" min="0" value="{{ inputs.worked_hours|default('0') }}" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="night_hours_worked" class="form-label">Heures de nuit <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Heures travaillées entre 22h et 6h"></i></label>
+                                            <input type="number" class="form-control" id="night_hours_worked" name="night_hours_worked" step="0.5" min="0" value="{{ inputs.night_hours_worked|default('0') }}">
+                                        </div>
+                                        
+                                        <h6 class="mt-3">Heures supplémentaires:</h6>
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <label for="extra_hours_125" class="form-label">125% <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Heures majorées à 25%"></i></label>
+                                                <input type="number" class="form-control" id="extra_hours_125" name="extra_hours_125" step="0.5" min="0" value="{{ inputs.extra_hours_125|default('0') }}">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="extra_hours_150" class="form-label">150% <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Heures majorées à 50%"></i></label>
+                                                <input type="number" class="form-control" id="extra_hours_150" name="extra_hours_150" step="0.5" min="0" value="{{ inputs.extra_hours_150|default('0') }}">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="extra_hours_200" class="form-label">200% <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Heures majorées à 100%"></i></label>
+                                                <input type="number" class="form-control" id="extra_hours_200" name="extra_hours_200" step="0.5" min="0" value="{{ inputs.extra_hours_200|default('0') }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="input-section">
+                                        <h5><i class="fas fa-calendar-day me-2"></i>Congés</h5>
+                                        <div class="mb-3">
+                                            <label for="paid_leave_days" class="form-label">Jours de congés payés <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Jours de congés payés pris dans le mois"></i></label>
+                                            <input type="number" class="form-control" id="paid_leave_days" name="paid_leave_days" step="0.5" min="0" value="{{ inputs.paid_leave_days|default('0') }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="exceptional_leave_days" class="form-label">Jours de congés exceptionnels <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" title="Congés exceptionnels (mariage, naissance, décès...)"></i></label>
+                                            <input type="number" class="form-control" id="exceptional_leave_days" name="exceptional_leave_days" step="0.5" min="0" value="{{ inputs.exceptional_leave_days|default('0') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Calendar Tab -->
+                        <div class="tab-pane fade" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
+                            <div class="mb-3">
+                                <label for="calendar_month" class="form-label">Mois</label>
+                                <input type="month" class="form-control" id="calendar_month" name="calendar_month" value="{{ inputs.calendar_month|default(current_month) }}">
+                            </div>
+                            
+                            <div id="calendarContainer" class="mt-3">
+                                <!-- Calendar will be loaded here with JavaScript -->
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <p>Chargement du calendrier...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced Options Tab -->
+                        <div class="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Paramètres du profil</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Taux horaire</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" value="{{ profile.hourly_rate }}" readonly>
+                                                    <span class="input-group-text">DH/h</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Prime de fonction</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" value="{{ profile.function_bonus_base_amount }}" readonly>
+                                                    <span class="input-group-text">DH</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Prime de performance</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" value="{{ profile.performance_bonus_amount }}" readonly>
+                                                    <span class="input-group-text">DH</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Prime de niveau</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" value="{{ profile.prime_de_niveau_amount }}" readonly>
+                                                    <span class="input-group-text">DH</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer text-end">
+                                            <a href="{{ url_for('profiles.edit', profile_id=profile.id) }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit me-1"></i> Modifier le profil
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Options supplémentaires</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label for="seniority_rate_percent" class="form-label">Taux d'ancienneté (%)</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="seniority_rate_percent" name="seniority_rate_percent" step="0.1" min="0" max="100" value="{{ inputs.seniority_rate_percent|default(profile.seniority_rate_percent) }}">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Additional options could be added here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg" id="calculateBtn">
+                            <i class="fas fa-calculator me-2"></i> Calculer le Salaire
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card shadow-sm mb-4 calculation-card">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0"><i class="fas fa-user me-2"></i>{{ profile.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Taux horaire:</span>
+                    <span class="fw-bold">{{ profile.hourly_rate|round(2) }} DH/h</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Prime de fonction:</span>
+                    <span class="fw-bold">{{ profile.function_bonus_base_amount|round(2) }} DH</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Prime de performance:</span>
+                    <span class="fw-bold">{{ profile.performance_bonus_amount|round(2) }} DH</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Prime de niveau:</span>
+                    <span class="fw-bold">{{ profile.prime_de_niveau_amount|round(2) }} DH</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Taux d'ancienneté:</span>
+                    <span class="fw-bold">{{ profile.seniority_rate_percent|round(1) }}%</span>
+                </div>
+            </div>
+            <div class="card-footer bg-white text-end">
+                <a href="{{ url_for('profiles.edit', profile_id=profile.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i> Modifier
+                </a>
+            </div>
+        </div>
+        
+        <!-- Recent Calculations Card -->
+        <div class="card shadow-sm calculation-card">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Calculs Récents</h5>
+            </div>
+            {% if recent_calculations %}
+            <ul class="list-group list-group-flush">
+                {% for calc in recent_calculations %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">{{ calc.calculation_date.strftime('%d/%m/%Y') }}</small>
+                            <p class="mb-0">Net: <span class="fw-bold">{{ calc.net_salary|round(2) }} DH</span></p>
+                        </div>
+                        <a href="{{ url_for('history.view', calculation_id=calc.id) }}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="card-body text-center text-muted">
+                <i class="fas fa-calculator fa-3x mb-3"></i>
+                <p>Aucun calcul récent</p>
+            </div>
+            {% endif %}
+            <div class="card-footer bg-white text-center">
+                <a href="{{ url_for('history.index', profile_id=profile.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-history me-1"></i> Voir tout l'historique
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Section -->
+{% if results %}
+<div class="result-section visible mt-4" id="resultsSection">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h3 class="card-title mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Résultats du Calcul</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Revenus</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for key, value in results.earnings.items() %}
+                                {% if value > 0 %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ key }}
+                                    <span class="fw-bold">{{ value|round(2) }} DH</span>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Salaire Brut</h5>
+                                <h5 class="mb-0 text-success">{{ results.gross_salary|round(2) }} DH</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Cotisations</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for key, value in results.social_pension_contributions.items() %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ key }}
+                                    <span class="fw-bold text-danger">-{{ value|round(2) }} DH</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Total des cotisations</h6>
+                                <h6 class="mb-0 text-danger">-{{ results.total_social_pension_contributions|round(2) }} DH</h6>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Impôt sur le Revenu (IR)</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <div>
+                                        <span>Revenu imposable (SNI)</span>
+                                        <small class="d-block text-muted">Après déduction des charges professionnelles</small>
+                                    </div>
+                                    <span class="fw-bold">{{ results.igr_calculation_details['Net Taxable Income (SNI - Monthly)']|round(2) }} DH</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Impôt sur le revenu (IR)</span>
+                                    <span class="fw-bold text-danger">-{{ results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']|round(2) }} DH</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    <h6 class="text-muted">Salaire Brut</h6>
+                                    <h4 class="text-success">{{ results.gross_salary|round(2) }} DH</h4>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <h6 class="text-muted">Total Déductions</h6>
+                                    <h4 class="text-danger">-{{ (results.total_social_pension_contributions + results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)'])|round(2) }} DH</h4>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <h6 class="text-muted">Salaire Net</h6>
+                                    <h3 class="fw-bold text-primary">{{ results.net_salary|round(2) }} DH</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="{{ url_for('calculator.print', calculation_id=calculation_id) if calculation_id else '#' }}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-print me-1"></i> Imprimer
+                    </a>
+                    <a href="{{ url_for('calculator.export_pdf', calculation_id=calculation_id) if calculation_id else '#' }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+                    </a>
+                    <a href="{{ url_for('calculator.index', profile_id=profile.id) }}" class="btn btn-outline-dark">
+                        <i class="fas fa-redo me-1"></i> Nouveau Calcul
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+    
+    // Track active tab
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]')
+        const activeTabInput = document.getElementById('activeTab')
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('shown.bs.tab', function (event) {
+                activeTabInput.value = event.target.id.replace('-tab', '')
+            })
+        })
+        
+        // Calendar implementation would go here
+        // For demonstration purposes, this is a placeholder
+    })
+    
+    // Add animation to results section
+    const resultSection = document.getElementById('resultsSection')
+    if (resultSection) {
+        setTimeout(() => {
+            resultSection.classList.add('visible')
+        }, 300)
+    }
+</script>
+{% endblock %} 

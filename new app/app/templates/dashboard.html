@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</h2>
+        
+        <div>
+            <a href="{{ url_for('profiles.new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Nouveau profil
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-3">
+                <div class="card-body text-center">
+                    <div class="display-4">{{ total_profiles }}</div>
+                    <div class="text-uppercase">Profils</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white mb-3">
+                <div class="card-body text-center">
+                    <div class="display-4">{{ total_calculations }}</div>
+                    <div class="text-uppercase">Calculs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-light mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i>Actions rapides</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('calculator.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-calculator me-1"></i> Calculer un bulletin
+                        </a>
+                        <a href="{{ url_for('history.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-history me-1"></i> Voir l'historique des calculs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Cards with Recent Calculations -->
+    {% if profile_data %}
+    <h3 class="mb-3"><i class="fas fa-user me-2"></i>Vos profils</h3>
+    <div class="row">
+        {% for data in profile_data %}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ data.profile.name }}</h5>
+                        <span class="badge bg-primary">{{ data.profile.hourly_rate|round(2) }} DH/h</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <div class="small text-muted">Prime de fonction</div>
+                            <div>{{ data.profile.function_bonus_base_amount|round(2) }} DH</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="small text-muted">Ancienneté</div>
+                            <div>{{ data.profile.seniority_rate_percent|round(1) }}%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Calculations -->
+                    {% if data.recent_calculations %}
+                    <div class="mt-3">
+                        <h6 class="border-bottom pb-2">Calculs récents</h6>
+                        <div class="list-group list-group-flush">
+                            {% for calc in data.recent_calculations %}
+                            <a href="{{ url_for('history.view', calculation_id=calc.id) }}" class="list-group-item list-group-item-action px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-muted">{{ calc.calculation_date.strftime('%d/%m/%Y') }}</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{ calc.net_salary|round(2) }} DH</div>
+                                        <small class="text-muted">Net</small>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light text-center">
+                        <p>Aucun calcul récent pour ce profil</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('profiles.edit', profile_id=data.profile.id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-edit me-1"></i> Éditer
+                        </a>
+                        <a href="{{ url_for('calculator.calculate', profile_id=data.profile.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-calculator me-1"></i> Calculer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-user-plus fa-4x text-muted mb-3"></i>
+            <h3 class="card-title">Aucun profil trouvé</h3>
+            <p class="card-text">Vous n'avez pas encore créé de profil. Créez votre premier profil pour commencer à calculer vos bulletins de paie.</p>
+            <a href="{{ url_for('profiles.new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Créer mon premier profil
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,1172 @@
+{% extends 'base.html' %}
+
+{% block title %}Calculateur - {{ profile.name }}{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-calculator me-2"></i>Calculateur de salaire</h2>
+        
+        <div>
+            <a href="{{ url_for('calculator.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-exchange-alt me-1"></i> Changer de profil
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Profile Info Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-user me-2"></i>{{ profile.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Taux horaire:</span>
+                        <span class="fw-bold">{{ profile.hourly_rate|round(2) }} DH/h</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Prime de fonction:</span>
+                        <span>{{ profile.function_bonus_base_amount|round(2) }} DH</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Prime de performance:</span>
+                        <span>{{ profile.performance_bonus_amount|round(2) }} DH</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Prime de niveau:</span>
+                        <span>{{ profile.prime_de_niveau_amount|round(2) }} DH</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Taux d'ancienneté:</span>
+                        <span>{{ profile.seniority_rate_percent|round(1) }}%</span>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('profiles.edit', profile_id=profile.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-edit me-1"></i> Modifier le profil
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Calculations -->
+            {% if recent_calculations %}
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Calculs récents</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for calc in recent_calculations %}
+                    <a href="{{ url_for('history.view', calculation_id=calc.id) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted">{{ calc.calculation_date.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                            <div class="text-end">
+                                <div>{{ calc.net_salary|round(2) }} DH</div>
+                                <small class="text-muted">Net</small>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('history.profile', profile_id=profile.id) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-list me-1"></i> Voir tout l'historique
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Calculator Form -->
+        <div class="col-md-8">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs mb-3" id="calculatorTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard" type="button" role="tab">
+                        <i class="fas fa-clipboard-list me-1"></i> Standard
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button" role="tab">
+                        <i class="fas fa-calendar-alt me-1"></i> Calendrier
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Form -->
+            <form method="post" id="calculatorForm">
+                {{ form.hidden_tag() }}
+                {{ form.hourly_rate() }}
+                {{ form.function_bonus_base_amount() }}
+                {{ form.performance_bonus_amount() }}
+                {{ form.prime_de_niveau_amount() }}
+                {{ form.tab() }}
+                {{ form.calendar_month() }}
+                {{ form.calendar_data_storage() }}
+                
+                <div class="tab-content" id="calculatorTabsContent">
+                    <!-- Standard Tab -->
+                    <div class="tab-pane fade show active" id="standard" role="tabpanel">
+                        <div class="card input-section mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Heures de travail</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="worked_hours" class="form-label">{{ form.worked_hours.label }} <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        {{ form.worked_hours(class="form-control") }}
+                                        <span class="input-group-text">heures</span>
+                                    </div>
+                                    {% for error in form.worked_hours.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="night_hours_worked" class="form-label">{{ form.night_hours_worked.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.night_hours_worked(class="form-control") }}
+                                                <span class="input-group-text">heures</span>
+                                            </div>
+                                            {% for error in form.night_hours_worked.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="seniority_rate_percent" class="form-label">{{ form.seniority_rate_percent.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.seniority_rate_percent(class="form-control") }}
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            {% for error in form.seniority_rate_percent.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                            <small class="form-text text-muted">La valeur par défaut est basée sur les informations du profil.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card input-section mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Heures supplémentaires</h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="extra_hours_125" class="form-label">{{ form.extra_hours_125.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.extra_hours_125(class="form-control") }}
+                                                <span class="input-group-text">heures</span>
+                                            </div>
+                                            {% for error in form.extra_hours_125.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="extra_hours_150" class="form-label">{{ form.extra_hours_150.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.extra_hours_150(class="form-control") }}
+                                                <span class="input-group-text">heures</span>
+                                            </div>
+                                            {% for error in form.extra_hours_150.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="extra_hours_200" class="form-label">{{ form.extra_hours_200.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.extra_hours_200(class="form-control") }}
+                                                <span class="input-group-text">heures</span>
+                                            </div>
+                                            {% for error in form.extra_hours_200.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card input-section mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Congés</h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="paid_leave_days" class="form-label">{{ form.paid_leave_days.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.paid_leave_days(class="form-control") }}
+                                                <span class="input-group-text">jours</span>
+                                            </div>
+                                            {% for error in form.paid_leave_days.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="exceptional_leave_days" class="form-label">{{ form.exceptional_leave_days.label }}</label>
+                                            <div class="input-group">
+                                                {{ form.exceptional_leave_days(class="form-control") }}
+                                                <span class="input-group-text">jours</span>
+                                            </div>
+                                            {% for error in form.exceptional_leave_days.errors %}
+                                                <div class="text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Tab -->
+                    <div class="tab-pane fade" id="calendar" role="tabpanel">
+                        <div class="card input-section mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Sélection par calendrier</h5>
+                                
+                                <div class="mb-4">
+                                    <label for="calendar_month" class="form-label">Mois</label>
+                                    <input type="month" id="calendar_month" name="calendar_month" class="form-control" value="{{ current_month }}">
+                                            </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-12">
+                                        <div class="btn-group w-100 calendar-controls" role="group">
+                                            <button type="button" class="btn btn-primary control-btn" data-value="regular">
+                                                <i class="fas fa-business-time me-1"></i> Jour normal
+                                            </button>
+                                            <button type="button" class="btn btn-success control-btn" data-value="leave">
+                                                <i class="fas fa-umbrella-beach me-1"></i> Congé payé
+                                            </button>
+                                            <button type="button" class="btn btn-info control-btn" data-value="exceptional-leave">
+                                                <i class="fas fa-star me-1"></i> Congés exceptionnels
+                                            </button>
+                                            <button type="button" class="btn btn-warning control-btn" data-value="overtime-125">
+                                                <i class="fas fa-hourglass-half me-1"></i> Supp. 125%
+                                            </button>
+                                            <button type="button" class="btn btn-danger control-btn" data-value="overtime-150">
+                                                <i class="fas fa-hourglass-half me-1"></i> Supp. 150%
+                                            </button>
+                                            <button type="button" class="btn btn-dark control-btn" data-value="overtime-200">
+                                                <i class="fas fa-hourglass-half me-1"></i> Supp. 200%
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="calendar-container" class="mt-4">
+                                    <table class="table table-bordered calendar-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Lun</th>
+                                                <th>Mar</th>
+                                                <th>Mer</th>
+                                                <th>Jeu</th>
+                                                <th>Ven</th>
+                                                <th>Sam</th>
+                                                <th>Dim</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="calendar-body">
+                                            <!-- Calendar will be generated dynamically -->
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                    
+                                <div class="row mt-4">
+                                    <div class="col-md-12">
+                                        <div class="recap-card mt-4">
+                                            <div class="recap-card-header">
+                                                <h6 class="mb-0">Récapitulatif</h6>
+                                            </div>
+                                            <div class="recap-card-body">
+                                                <div class="row">
+                                                    <!-- Days column -->
+                                                    <div class="col-md-6">
+                                                        <div class="recap-card">
+                                                            <div class="recap-card-header">
+                                                                <h6 class="mb-0">Jours</h6>
+                                                            </div>
+                                                            <div class="recap-card-body">
+                                                                <div class="row mb-2">
+                                                                    <div class="col-6">
+                                                                        <div class="recap-box box-jours">
+                                                                            <div class="recap-box-label">Jours travaillés</div>
+                                                                            <div class="recap-box-value" id="calendar-regular-days">0</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <div class="recap-box box-conges">
+                                                                            <div class="recap-box-label">Congés</div>
+                                                                            <div class="recap-box-value" id="calendar-leave-days">0</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="recap-box box-conges-except mb-2">
+                                                                    <div class="recap-box-label">Congés exceptionnels</div>
+                                                                    <div class="recap-box-value" id="calendar-exceptional-leave-days">0</div>
+                                                                </div>
+                                                                
+                                                                <div class="row">
+                                                                    <div class="col-4">
+                                                                        <div class="recap-box box-supp-125">
+                                                                            <div class="recap-box-label">Supp. (125%)</div>
+                                                                            <div class="recap-box-value" id="calendar-overtime-125-days">0</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-4">
+                                                                        <div class="recap-box box-supp-150">
+                                                                            <div class="recap-box-label">Supp. (150%)</div>
+                                                                            <div class="recap-box-value" id="calendar-overtime-150-days">0</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-4">
+                                                                        <div class="recap-box box-supp-200">
+                                                                            <div class="recap-box-label">Supp. (200%)</div>
+                                                                            <div class="recap-box-value" id="calendar-overtime-200-days">0</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                                    <!-- Hours column -->
+                                                    <div class="col-md-6">
+                                                        <div class="recap-card">
+                                                            <div class="recap-card-header">
+                                                                <h6 class="mb-0">Heures</h6>
+                                                            </div>
+                                                            <div class="recap-card-body">
+                                                                <div class="recap-box box-jours mb-2">
+                                                                    <div class="recap-box-label">Heures normales</div>
+                                                                    <div class="recap-box-value" id="calendar-regular-hours">0.0</div>
+                                                                </div>
+                                                                
+                                                                <div class="recap-box box-supp-125 mb-2">
+                                                                    <div class="recap-box-label">Supp. (125%)</div>
+                                                                    <div class="recap-box-value" id="calendar-overtime-125-hours">0.0</div>
+                                                                </div>
+                                                                
+                                                                <div class="recap-box box-supp-150 mb-2">
+                                                                    <div class="recap-box-label">Supp. (150%)</div>
+                                                                    <div class="recap-box-value" id="calendar-overtime-150-hours">0.0</div>
+                                                                </div>
+                                                                
+                                                                <div class="recap-box box-supp-200">
+                                                                    <div class="recap-box-label">Supp. (200%)</div>
+                                                                    <div class="recap-box-value" id="calendar-overtime-200-hours">0.0</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card input-section mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Autres paramètres</h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                <div class="mb-3">
+                                            <label for="calendar_seniority_rate_percent" class="form-label">Taux d'ancienneté (%)</label>
+                                    <div class="input-group">
+                                                <input type="number" id="calendar_seniority_rate_percent" class="form-control" value="{{ profile.seniority_rate_percent }}">
+                                        <span class="input-group-text">%</span>
+                                            </div>
+                                            <small class="form-text text-muted">La valeur par défaut est basée sur les informations du profil.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="calendar_exceptional_leave_days" class="form-label">Jours de congés exceptionnels</label>
+                                            <div class="input-group">
+                                                <input type="number" id="calendar_exceptional_leave_days" class="form-control" value="0" min="0" step="0.5">
+                                                <span class="input-group-text">jours</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="calendar-submit-btn">
+                                        <i class="fas fa-calculator me-1"></i> Calculer le Salaire
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Section for Calendar -->
+                        <div id="calendar-results-section" class="mt-5" style="display: none;">
+                            <!-- Results will be copied here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main form submit button - only shown in standard tab -->
+                <div class="d-grid gap-2" id="standard-submit-container">
+                    {{ form.submit(class="btn btn-primary btn-lg", id="main-submit-btn") }}
+                </div>
+                
+                <!-- Hidden submit button for programmatic submission -->
+                <button type="submit" id="hidden-submit" style="display: none;">Submit</button>
+            </form>
+            
+            <!-- Results Section -->
+            {% if results %}
+            <div class="result-section visible mt-5">
+                <h3 class="mb-4"><i class="fas fa-file-invoice-dollar me-2"></i>Résultats du calcul</h3>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Récapitulatif</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="h6 text-muted">Salaire Brut</div>
+                                <div class="h3">{{ results.gross_salary|round(2) }} DH</div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="h6 text-muted">Cotisations</div>
+                                <div class="h3">{{ results.total_social_pension_contributions|round(2) }} DH</div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="h6 text-muted">Salaire Net</div>
+                                <div class="h3 text-success">{{ results.net_salary|round(2) }} DH</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Results Accordion -->
+                <div class="accordion" id="resultsAccordion">
+                    <!-- Earnings -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingEarnings">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEarnings">
+                                <i class="fas fa-plus-circle me-2"></i> Revenus
+                            </button>
+                        </h2>
+                        <div id="collapseEarnings" class="accordion-collapse collapse show" aria-labelledby="headingEarnings" data-bs-parent="#resultsAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-hover">
+                                    <tbody>
+                                        {% for key, value in results.earnings.items() %}
+                                            {% if value > 0 %}
+                                            <tr>
+                                                <td>{{ key }}</td>
+                                                <td class="text-end">{{ value|round(2) }} DH</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <tr class="table-light">
+                                            <th>Salaire Brut</th>
+                                            <th class="text-end">{{ results.gross_salary|round(2) }} DH</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Deductions -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingDeductions">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDeductions">
+                                <i class="fas fa-minus-circle me-2"></i> Cotisations Sociales
+                            </button>
+                        </h2>
+                        <div id="collapseDeductions" class="accordion-collapse collapse" aria-labelledby="headingDeductions" data-bs-parent="#resultsAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-hover">
+                                    <tbody>
+                                        {% for key, value in results.social_pension_contributions.items() %}
+                                        <tr>
+                                            <td>{{ key }}</td>
+                                            <td class="text-end">{{ value|round(2) }} DH</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr class="table-light">
+                                            <th>Total des Cotisations</th>
+                                            <th class="text-end">{{ results.total_social_pension_contributions|round(2) }} DH</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- IGR (Income Tax) -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingIGR">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIGR">
+                                <i class="fas fa-landmark me-2"></i> Impôt sur le Revenu (IR)
+                            </button>
+                        </h2>
+                        <div id="collapseIGR" class="accordion-collapse collapse" aria-labelledby="headingIGR" data-bs-parent="#resultsAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-hover">
+                                    <tbody>
+                                        {% for key, value in results.igr_calculation_details.items() %}
+                                        <tr>
+                                            <td>{{ key }}</td>
+                                            <td class="text-end">{{ value|round(2) }} DH</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Final Net Salary -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingNet">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNet">
+                                <i class="fas fa-money-bill-wave me-2"></i> Salaire Net
+                            </button>
+                        </h2>
+                        <div id="collapseNet" class="accordion-collapse collapse" aria-labelledby="headingNet" data-bs-parent="#resultsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-hover">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Salaire Brut</td>
+                                                    <td class="text-end">{{ results.gross_salary|round(2) }} DH</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total des Cotisations Sociales</td>
+                                                    <td class="text-end text-danger">- {{ results.total_social_pension_contributions|round(2) }} DH</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Impôt sur le Revenu (IR)</td>
+                                                    <td class="text-end text-danger">- {{ results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']|round(2) }} DH</td>
+                                                </tr>
+                                                <tr class="table-success">
+                                                    <th>Salaire Net</th>
+                                                    <th class="text-end">{{ results.net_salary|round(2) }} DH</th>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Imprimer
+                            </button>
+                            
+                            <div>
+                                <a href="{{ url_for('calculator.print', calculation_id=calculation_id) }}" class="btn btn-outline-info me-2" target="_blank">
+                                    <i class="fas fa-eye me-1"></i> Vue d'impression
+                                </a>
+                                
+                                <a href="{{ url_for('calculator.export_pdf', calculation_id=calculation_id) }}" class="btn btn-primary">
+                                    <i class="fas fa-file-pdf me-1"></i> Exporter en PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .border-dashed {
+        border-style: dashed;
+        border-width: 2px;
+        border-color: #dee2e6;
+    }
+    
+    .result-section {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .result-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* Calendar styling */
+    .calendar-table {
+        table-layout: fixed;
+    }
+    
+    .calendar-table th,
+    .calendar-table td {
+        width: 14.28%;
+        height: 70px;
+        position: relative;
+        vertical-align: top;
+        padding: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .calendar-table td:hover:not(.day-inactive) {
+        background-color: #f8f9fa;
+    }
+    
+    .calendar-date {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+    
+    .day-inactive {
+        background-color: #f5f5f5;
+        color: #aaa;
+        cursor: not-allowed;
+    }
+    
+    .calendar-controls {
+        display: flex;
+    }
+    
+    .calendar-controls .btn {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0.5rem 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Calendar day styles */
+    .calendar-day {
+        width: 100%;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+    }
+    
+    .calendar-day-regular {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .calendar-day-leave {
+        background-color: #198754;
+        color: white;
+    }
+    
+    .calendar-day-overtime-125 {
+        background-color: #ffc107;
+        color: black;
+    }
+    
+    .calendar-day-overtime-150 {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .calendar-day-overtime-200 {
+        background-color: #212529;
+        color: white;
+    }
+    
+    .calendar-day-exceptional-leave {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .calendar-summary-box {
+        min-width: 32px;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    /* Hide the main form submit button when in calendar mode */
+    #calculatorForm > .d-grid {
+        display: none;
+    }
+    
+    /* Reset and simplify card styles */
+    .recap-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .recap-card-header {
+        padding: 0.5rem 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .recap-card-body {
+        padding: 0.75rem;
+    }
+    
+    /* Box styles matching the screenshot - more compact vertically */
+    .recap-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.35rem;
+        border-radius: 0.25rem;
+        color: white;
+        min-height: 44px;
+    }
+    
+    .recap-box-label {
+        font-size: 0.9rem;
+    }
+    
+    .recap-box-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    /* Specific adjustments for days column */
+    .col-md-6 .recap-card-body .row {
+        margin-bottom: 0.35rem;
+    }
+    
+    .col-md-6 .recap-card-body .row .col-6,
+    .col-md-6 .recap-card-body .row .col-4 {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+    
+    /* Box color styles */
+    .box-jours {
+        background-color: #0d6efd;
+    }
+    
+    .box-conges {
+        background-color: #198754;
+    }
+    
+    .box-conges-except {
+        background-color: #17a2b8;
+    }
+    
+    .box-supp-125 {
+        background-color: #ffc107;
+        color: black;
+    }
+    
+    .box-supp-150 {
+        background-color: #dc3545;
+    }
+    
+    .box-supp-200 {
+        background-color: #212529;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get references to elements
+        const tabLinks = document.querySelectorAll('.nav-link');
+        const tabInput = document.getElementById('tab');
+        const standardSubmitContainer = document.getElementById('standard-submit-container');
+        const calendarSubmitBtn = document.getElementById('calendar-submit-btn');
+        const calculatorForm = document.getElementById('calculatorForm');
+        const hiddenSubmitBtn = document.getElementById('hidden-submit');
+        const resultSection = document.querySelector('.result-section');
+        const calendarResultsSection = document.getElementById('calendar-results-section');
+        
+        // Show the results section with animation
+        if (resultSection) {
+            // Results already have the visible class, so we don't need animation timeout
+            
+            // Check if we're on calendar tab and need to move results
+            if (tabInput.value === 'calendar') {
+                // Show the calendar results section
+                if (calendarResultsSection) {
+                    calendarResultsSection.innerHTML = resultSection.innerHTML;
+                    calendarResultsSection.style.display = 'block';
+                    // Hide the standard results section
+                    resultSection.style.display = 'none';
+                }
+            }
+        }
+        
+        // Function to handle tab changes
+        function handleTabChange(tabId) {
+            // Update hidden input
+            tabInput.value = tabId;
+            
+            // Show/hide the standard submit button based on tab
+            if (tabId === 'calendar') {
+                standardSubmitContainer.classList.add('d-none');
+                
+                // If there are results, show them in the calendar section
+                if (resultSection && resultSection.classList.contains('visible')) {
+                    if (calendarResultsSection) {
+                        calendarResultsSection.innerHTML = resultSection.innerHTML;
+                        calendarResultsSection.style.display = 'block';
+                        resultSection.style.display = 'none';
+                    }
+                }
+            } else {
+                standardSubmitContainer.classList.remove('d-none');
+                
+                // When switching to standard tab, show standard results and hide calendar results
+                if (resultSection) {
+                    resultSection.style.display = 'block';
+                }
+                if (calendarResultsSection) {
+                    calendarResultsSection.style.display = 'none';
+                }
+            }
+        }
+        
+        // Set initial state based on current tab
+        const currentTab = tabInput.value || 'standard';
+        handleTabChange(currentTab);
+        
+        // Activate the correct tab
+        const activeTabElement = document.getElementById(currentTab + '-tab');
+        if (activeTabElement) {
+            // Only try to use bootstrap Tab if it exists (for older browsers)
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                const bootstrapTab = new bootstrap.Tab(activeTabElement);
+                bootstrapTab.show();
+            } else {
+                activeTabElement.click();
+            }
+        }
+        
+        // Add tab click handlers
+        tabLinks.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.id.split('-')[0];
+                handleTabChange(tabId);
+            });
+        });
+        
+        // Handle calendar submit button click
+        if (calendarSubmitBtn) {
+            calendarSubmitBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                console.log('Calendar submit clicked');
+                
+                try {
+                    // Update form fields
+                    document.getElementById('worked_hours').value = 
+                        document.getElementById('calendar-regular-hours').innerText;
+                    document.getElementById('extra_hours_125').value = 
+                        document.getElementById('calendar-overtime-125-hours').innerText;
+                    document.getElementById('extra_hours_150').value = 
+                        document.getElementById('calendar-overtime-150-hours').innerText;
+                    document.getElementById('extra_hours_200').value = 
+                        document.getElementById('calendar-overtime-200-hours').innerText;
+                    document.getElementById('paid_leave_days').value = 
+                        document.getElementById('calendar-leave-days').innerText;
+                    document.getElementById('exceptional_leave_days').value = 
+                        document.getElementById('calendar_exceptional_leave_days').value;
+                    document.getElementById('seniority_rate_percent').value = 
+                        document.getElementById('calendar_seniority_rate_percent').value;
+                    
+                    // Set tab value to ensure we stay on calendar tab after submission
+                    tabInput.value = 'calendar';
+                    
+                    // Submit form by clicking the hidden submit button
+                    console.log('Submitting form by clicking hidden button...');
+                    hiddenSubmitBtn.click();
+                } catch (error) {
+                    console.error('Error submitting calendar form:', error);
+                }
+            });
+        }
+        
+        // Calendar functionality
+        const calendarMonthInput = document.getElementById('calendar_month');
+        const calendarBody = document.getElementById('calendar-body');
+        const calendarDataStorage = document.getElementById('calendar_data_storage');
+        const controlButtons = document.querySelectorAll('.control-btn');
+        
+        // Hours per day constant
+        const HOURS_PER_DAY = 7.67;
+        
+        let calendarData = {};
+        let selectedDayType = 'regular'; // Default day type
+        
+        try {
+            if (calendarDataStorage.value) {
+                calendarData = JSON.parse(calendarDataStorage.value);
+            }
+        } catch (e) {
+            console.error("Error parsing calendar data:", e);
+            calendarData = {};
+        }
+        
+        // Initialize calendar if month is selected
+        if (calendarMonthInput.value) {
+            generateCalendar(calendarMonthInput.value);
+        }
+
+        // Set up active day type button
+        controlButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                controlButtons.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Set selected day type
+                selectedDayType = this.dataset.value;
+            });
+        });
+        
+        // Set first button as active by default
+        controlButtons[0].classList.add('active');
+        
+        // Handle month selection
+        calendarMonthInput.addEventListener('change', function() {
+            generateCalendar(this.value);
+        });
+        
+        // Generate the calendar for the selected month
+        function generateCalendar(monthStr) {
+            if (!monthStr) return;
+            
+            const [year, month] = monthStr.split('-').map(num => parseInt(num, 10));
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            
+            // Get the day of the week for the first day (0 = Sunday, 1 = Monday, etc.)
+            let startDay = firstDay.getDay();
+            if (startDay === 0) startDay = 7; // Convert Sunday from 0 to 7
+            
+            // Calculate the number of days in the month
+            const daysInMonth = lastDay.getDate();
+            
+            // Calculate the number of weeks needed
+            const numWeeks = Math.ceil((startDay - 1 + daysInMonth) / 7);
+            
+            // Clear existing calendar
+            calendarBody.innerHTML = '';
+            
+            let dayCounter = 1;
+            let dayOfMonth = 1;
+            
+            // Generate calendar rows and cells
+            for (let week = 0; week < numWeeks; week++) {
+                const row = document.createElement('tr');
+                
+                for (let day = 1; day <= 7; day++) {
+                    const cell = document.createElement('td');
+                    
+                    // Add days from the current month
+                    if ((week === 0 && day < startDay) || dayOfMonth > daysInMonth) {
+                        cell.classList.add('day-inactive');
+                    } else {
+                        const dateKey = `${year}-${month.toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')}`;
+                        
+                        // Date number
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'calendar-date';
+                        dateDiv.textContent = dayOfMonth;
+                        cell.appendChild(dateDiv);
+                        
+                        // Day indicator (full-width box)
+                        const dayIndicator = document.createElement('div');
+                        dayIndicator.className = 'calendar-day';
+                        
+                        // Add existing data if available
+                        let dayLabel = '';
+                        if (calendarData[dateKey]) {
+                            const type = calendarData[dateKey].type;
+                            dayIndicator.classList.add(`calendar-day-${type}`);
+                            
+                            // Add label based on type
+                            switch(type) {
+                                case 'regular':
+                                    dayLabel = `Normal (${HOURS_PER_DAY}h)`;
+                                    break;
+                                case 'leave':
+                                    dayLabel = 'Congé';
+                                    break;
+                                case 'exceptional-leave':
+                                    dayLabel = 'Congé except.';
+                                    break;
+                                case 'overtime-125':
+                                    dayLabel = 'Supp. 125%';
+                                    break;
+                                case 'overtime-150':
+                                    dayLabel = 'Supp. 150%';
+                                    break;
+                                case 'overtime-200':
+                                    dayLabel = 'Supp. 200%';
+                                    break;
+                            }
+                            dayIndicator.textContent = dayLabel;
+                        }
+                        
+                        cell.appendChild(dayIndicator);
+                        
+                        // Add click handler to cell
+                        cell.addEventListener('click', function() {
+                            // Toggle this day's type
+                            if (calendarData[dateKey] && calendarData[dateKey].type === selectedDayType) {
+                                // If already this type, remove it
+                                delete calendarData[dateKey];
+                                dayIndicator.className = 'calendar-day';
+                                dayIndicator.textContent = '';
+                            } else {
+                                // Otherwise, set to the selected type
+                                calendarData[dateKey] = {
+                                    type: selectedDayType,
+                                    hours: HOURS_PER_DAY
+                                };
+                                
+                                // Reset the indicator class
+                                dayIndicator.className = 'calendar-day';
+                                // Add the type-specific class
+                                dayIndicator.classList.add(`calendar-day-${selectedDayType}`);
+                                
+                                // Add label based on selected type
+                                switch(selectedDayType) {
+                                    case 'regular':
+                                        dayLabel = `Normal (${HOURS_PER_DAY}h)`;
+                                        break;
+                                    case 'leave':
+                                        dayLabel = 'Congé';
+                                        break;
+                                    case 'exceptional-leave':
+                                        dayLabel = 'Congé except.';
+                                        break;
+                                    case 'overtime-125':
+                                        dayLabel = 'Supp. 125%';
+                                        break;
+                                    case 'overtime-150':
+                                        dayLabel = 'Supp. 150%';
+                                        break;
+                                    case 'overtime-200':
+                                        dayLabel = 'Supp. 200%';
+                                        break;
+                                }
+                                dayIndicator.textContent = dayLabel;
+                            }
+                            
+                            // Update the hidden input
+                            calendarDataStorage.value = JSON.stringify(calendarData);
+                            
+                            // Update summary
+                            updateCalendarSummary();
+                        });
+                        
+                        dayOfMonth++;
+                    }
+                    
+                    row.appendChild(cell);
+                }
+                
+                calendarBody.appendChild(row);
+            }
+            
+            // Update summary after generating calendar
+            updateCalendarSummary();
+        }
+        
+        // Update the calendar summary (hours by category)
+        function updateCalendarSummary() {
+            let regularDays = 0;
+            let leaveDays = 0;
+            let exceptionalLeaveDays = 0;
+            let overtime125Days = 0;
+            let overtime150Days = 0;
+            let overtime200Days = 0;
+            
+            // Calculate totals
+            for (const dateKey in calendarData) {
+                const data = calendarData[dateKey];
+                if (data.type === 'regular') {
+                    regularDays++;
+                } else if (data.type === 'leave') {
+                    leaveDays++;
+                } else if (data.type === 'exceptional-leave') {
+                    exceptionalLeaveDays++;
+                } else if (data.type === 'overtime-125') {
+                    overtime125Days++;
+                } else if (data.type === 'overtime-150') {
+                    overtime150Days++;
+                } else if (data.type === 'overtime-200') {
+                    overtime200Days++;
+                }
+            }
+            
+            // Calculate hours
+            const regularHours = regularDays * HOURS_PER_DAY;
+            const overtime125Hours = overtime125Days * HOURS_PER_DAY;
+            const overtime150Hours = overtime150Days * HOURS_PER_DAY;
+            const overtime200Hours = overtime200Days * HOURS_PER_DAY;
+            
+            // Update the summary spans - ensure proper display
+            document.getElementById('calendar-regular-days').innerText = regularDays;
+            document.getElementById('calendar-leave-days').innerText = leaveDays;
+            document.getElementById('calendar-exceptional-leave-days').innerText = exceptionalLeaveDays;
+            document.getElementById('calendar-overtime-125-days').innerText = overtime125Days;
+            document.getElementById('calendar-overtime-150-days').innerText = overtime150Days;
+            document.getElementById('calendar-overtime-200-days').innerText = overtime200Days;
+            
+            document.getElementById('calendar-regular-hours').innerText = regularHours.toFixed(1);
+            document.getElementById('calendar-overtime-125-hours').innerText = overtime125Hours.toFixed(1);
+            document.getElementById('calendar-overtime-150-hours').innerText = overtime150Hours.toFixed(1);
+            document.getElementById('calendar-overtime-200-hours').innerText = overtime200Hours.toFixed(1);
+            
+            // Update exceptional leave days in the input field
+            document.getElementById('calendar_exceptional_leave_days').value = exceptionalLeaveDays;
+        }
+    });
+</script>
+{% endblock %} 

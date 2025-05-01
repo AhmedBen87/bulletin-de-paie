@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ 'Modifier' if profile else 'Nouveau' }} Profil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-{{ 'edit' if profile else 'plus-circle' }} me-2"></i>
+                        {{ 'Modifier le profil' if profile else 'Nouveau profil' }}
+                    </h3>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" id="profileForm" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-muted">
+                                <i class="fas fa-user me-2"></i> Informations de base
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+                                {{ form.name(class="form-control") }}
+                                {% for error in form.name.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-muted">
+                                <i class="fas fa-money-bill-wave me-2"></i> Rémunération
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="hourly_rate" class="form-label">{{ form.hourly_rate.label }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    {{ form.hourly_rate(class="form-control") }}
+                                    <span class="input-group-text">DH/h</span>
+                                </div>
+                                {% for error in form.hourly_rate.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                                <small class="form-text text-muted">Taux horaire brut sans les primes.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-muted">
+                                <i class="fas fa-gift me-2"></i> Primes et avantages
+                            </h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="function_bonus_base_amount" class="form-label">{{ form.function_bonus_base_amount.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.function_bonus_base_amount(class="form-control") }}
+                                        <span class="input-group-text">DH</span>
+                                    </div>
+                                    {% for error in form.function_bonus_base_amount.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                    <small class="form-text text-muted">Montant fixe mensuel lié à la fonction.</small>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="performance_bonus_amount" class="form-label">{{ form.performance_bonus_amount.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.performance_bonus_amount(class="form-control") }}
+                                        <span class="input-group-text">DH</span>
+                                    </div>
+                                    {% for error in form.performance_bonus_amount.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                    <small class="form-text text-muted">Prime basée sur les performances individuelles.</small>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="prime_de_niveau_amount" class="form-label">{{ form.prime_de_niveau_amount.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.prime_de_niveau_amount(class="form-control") }}
+                                        <span class="input-group-text">DH</span>
+                                    </div>
+                                    {% for error in form.prime_de_niveau_amount.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                    <small class="form-text text-muted">Prime additionnelle selon le niveau.</small>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="seniority_rate_percent" class="form-label">{{ form.seniority_rate_percent.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.seniority_rate_percent(class="form-control") }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {% for error in form.seniority_rate_percent.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                    <small class="form-text text-muted">Pourcentage d'ancienneté appliqué au salaire de base.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('profiles.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            
+                            <div>
+                                {% if profile %}
+                                <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="fas fa-trash-alt me-1"></i> Supprimer
+                                </button>
+                                {% endif %}
+                                
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if profile %}
+            <!-- Quick Calculator Card -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Calculateur rapide</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Calculez rapidement un bulletin de paie pour <strong>{{ profile.name }}</strong> en utilisant les paramètres actuels.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('calculator.calculate', profile_id=profile.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-calculator me-1"></i> Calculer un bulletin de paie
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if profile %}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmation de suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le profil <strong>{{ profile.name }}</strong> ?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Cette action est irréversible et supprimera également tout l'historique des calculs associé à ce profil.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form action="{{ url_for('profiles.delete', profile_id=profile.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('profileForm');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+        
+        // Add real-time validation for the hourly rate
+        const hourlyRateInput = document.getElementById('hourly_rate');
+        hourlyRateInput.addEventListener('input', function() {
+            if (parseFloat(this.value) <= 0) {
+                this.setCustomValidity('Le taux horaire doit être supérieur à 0');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    });
+</script>
+{% endblock %} 

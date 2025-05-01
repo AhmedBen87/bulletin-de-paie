@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moroccan Salary Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #34495e;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #f5f7fa;
+            --danger-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --border-radius: 6px;
+            --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: #f5f7fa;
+            padding: 0;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .form-section, .results-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-section:hover, .results-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        form label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        form input[type=number] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-top: 5px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        form input[type=number]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+        
+        form button {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            width: 100%;
+        }
+        
+        form button:hover {
+            background-color: #2980b9;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .results-section h2, .results-section h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 1.5rem;
+        }
+        
+        .results-section dl {
+            margin-left: 0;
+            padding-left: 0;
+        }
+        
+        .results-section dt {
+            font-weight: bold;
+            color: #555;
+            width: 270px;
+            float: left;
+            clear: left;
+            padding-right: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .results-section dd {
+            margin-left: 280px;
+            text-align: right;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted #eee;
+        }
+        
+        .total-line dt, .total-line dd {
+            font-weight: bold;
+            color: var(--primary-color);
+            border-top: 2px solid #eee;
+            padding-top: 10px;
+            border-bottom: none;
+            font-size: 1.1em;
+        }
+        
+        .subtotal-line dt, .subtotal-line dd {
+            font-weight: bold;
+            color: var(--primary-color);
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            border-bottom: none;
+        }
+        
+        .igr-line dt, .igr-line dd {
+            font-weight: bold;
+            color: var(--danger-color);
+            border-bottom: none;
+        }
+        
+        .net-salary {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--primary-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .error {
+            color: white;
+            font-weight: bold;
+            background-color: var(--danger-color);
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .disclaimer {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        .info-text {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+            background-color: var(--light-bg);
+            padding: 10px;
+            border-radius: var(--border-radius);
+        }
+        
+        /* Clearfix for DL */
+        .results-section dl::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: #eee;
+            margin: 15px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .results-section dt {
+                width: 100%;
+                float: none;
+                margin-bottom: 5px;
+            }
+            
+            .results-section dd {
+                margin-left: 0;
+                text-align: left;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Moroccan Salary Calculator</h1>
+        <p class="subtitle">Enter your salary details to calculate your estimated net pay</p>
+    </header>
+
+    <div class="container">
+        {% if error %}
+            <div class="error"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+        {% endif %}
+
+        <div class="form-section">
+            <form method="post">
+                <h2><i class="fas fa-calculator"></i> Salary Inputs</h2>
+                <label for="hourly_rate">Hourly Rate (MAD):</label>
+                <input type="number" step="any" id="hourly_rate" name="hourly_rate" value="{{ inputs.get('hourly_rate', '') }}" required>
+                <label for="worked_hours">Worked Hours (This Period):</label>
+                <input type="number" step="any" id="worked_hours" name="worked_hours" value="{{ inputs.get('worked_hours', '') }}" required>
+                <label for="function_bonus_base_amount">Function Bonus Base Amount (MAD):</label>
+                <input type="number" step="any" id="function_bonus_base_amount" name="function_bonus_base_amount" value="{{ inputs.get('function_bonus_base_amount', 0) }}">
+                <label for="performance_bonus_amount">Performance Bonus Amount (MAD):</label>
+                <input type="number" step="any" id="performance_bonus_amount" name="performance_bonus_amount" value="{{ inputs.get('performance_bonus_amount', 0) }}">
+                <label for="prime_de_niveau_amount">Prime de Niveau Amount (MAD):</label>
+                <input type="number" step="any" id="prime_de_niveau_amount" name="prime_de_niveau_amount" value="{{ inputs.get('prime_de_niveau_amount', 0) }}">
+                <label for="night_hours_worked">Night Hours Worked:</label>
+                <input type="number" step="any" id="night_hours_worked" name="night_hours_worked" value="{{ inputs.get('night_hours_worked', 0) }}">
+                <small class="help-text" style="display: block; margin-top: 5px; color: #666; font-size: 0.875rem;">Night hour bonus will be calculated at fixed 20% rate</small>
+                
+                <h3 style="margin-top: 20px; color: var(--primary-color); font-size: 1.1rem; border-bottom: 1px solid var(--secondary-color); padding-bottom: 5px;"><i class="fas fa-business-time"></i> Extra Hours</h3>
+                
+                <label for="extra_hours_125">Extra Hours (125%):</label>
+                <input type="number" step="any" id="extra_hours_125" name="extra_hours_125" value="{{ inputs.get('extra_hours_125', 0) }}">
+                <small class="help-text" style="display: block; margin-top: 5px; color: #666; font-size: 0.875rem;">Compensated at 125% of hourly rate</small>
+                
+                <label for="extra_hours_150">Extra Hours (150%):</label>
+                <input type="number" step="any" id="extra_hours_150" name="extra_hours_150" value="{{ inputs.get('extra_hours_150', 0) }}">
+                <small class="help-text" style="display: block; margin-top: 5px; color: #666; font-size: 0.875rem;">Compensated at 150% of hourly rate</small>
+                
+                <label for="extra_hours_200">Extra Hours (200%):</label>
+                <input type="number" step="any" id="extra_hours_200" name="extra_hours_200" value="{{ inputs.get('extra_hours_200', 0) }}">
+                <small class="help-text" style="display: block; margin-top: 5px; color: #666; font-size: 0.875rem;">Compensated at 200% of hourly rate</small>
+                
+                <label for="seniority_rate_percent">Seniority (Ancienneté) Rate (%):</label>
+                <input type="number" step="any" id="seniority_rate_percent" name="seniority_rate_percent" value="{{ inputs.get('seniority_rate_percent', 0) }}">
+                <label for="paid_leave_days">Paid Leave Days (Congé Payé):</label>
+                <input type="number" step="any" id="paid_leave_days" name="paid_leave_days" value="{{ inputs.get('paid_leave_days', 0) }}">
+                <label for="exceptional_leave_days">Exceptional Leave Days (Congé Except.):</label>
+                <input type="number" step="any" id="exceptional_leave_days" name="exceptional_leave_days" value="{{ inputs.get('exceptional_leave_days', 0) }}">
+                <button type="submit"><i class="fas fa-calculator"></i> Calculate Salary</button>
+            </form>
+        </div>
+
+        <div class="results-section">
+            {% if results %}
+            <h2><i class="fas fa-chart-bar"></i> Results</h2>
+
+            <h3>Earnings Breakdown</h3>
+            <dl>
+                {% for name, value in results.earnings.items() %}
+                <dt>{{ name }}:</dt><dd>{{ "%.2f"|format(value) }} MAD</dd>
+                {% endfor %}
+                <dt class="total-line">Total Gross Salary:</dt><dd class="total-line">{{ "%.2f"|format(results.gross_salary) }} MAD</dd>
+            </dl>
+
+            <h3>Social & Pension Contributions</h3>
+            <dl>
+                 {% for name, value in results.social_pension_contributions.items() %}
+                     {% if value != 0 %}
+                         <dt>{{ name }}:</dt><dd>{{ "%.2f"|format(value) }} MAD</dd>
+                     {% endif %}
+                 {% endfor %}
+                 <dt class="subtotal-line">Total Cotisations:</dt>
+                 <dd class="subtotal-line">{{ "%.2f"|format(results.total_social_pension_contributions) }} MAD</dd>
+            </dl>
+
+            <h3>Income Tax (IGR)</h3>
+            <dl>
+                 <dt class="igr-line">IGR (Income Tax - calc. 0 dependents):</dt>
+                 <dd class="igr-line">{{ "%.2f"|format(results.igr_calculation_details['IGR (Income Tax - calc. 0 dependents)']) }} MAD</dd>
+            </dl>
+            <p class="info-text">
+                <i class="fas fa-info-circle"></i> Calculated based on SNI: {{ "%.2f"|format(results.igr_calculation_details['Net Taxable Income (SNI - Monthly)']) }} MAD,
+                after Prof. Expenses Deduction: {{ "%.2f"|format(results.igr_calculation_details['Professional Expenses Deduction (Info)']) }} MAD
+            </p>
+
+            <div class="net-salary">
+                <i class="fas fa-money-bill-wave"></i> Net Salary: {{ "%.2f"|format(results.net_salary) }} MAD
+            </div>
+
+            <div class="disclaimer">
+                <strong><i class="fas fa-exclamation-triangle"></i> Disclaimer:</strong> This calculation is an estimate based on the provided inputs and standard Moroccan regulations (including common social contribution structures). The IGR (Income Tax) calculation assumes 0 dependents and does not apply family charge deductions; actual tax may be lower for users with dependents. Actual net salary may differ due to specific company policies, variations in complementary insurance schemes, payroll system rounding, specific IGR adjustments, or recent changes in law not yet reflected here. Always refer to your official payslip for definitive figures.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
